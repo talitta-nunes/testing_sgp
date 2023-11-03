@@ -1,18 +1,41 @@
 import requests
-# import pandas as pd
-# import sqlalchemy
+import pandas as pd
+import sqlalchemy
+import json
 from constants import URL, BODY
 
-def sgpAPI():
+def make_api_request():
     header = {'content-type': 'application/json'}
     try:
         res = requests.post(URL, headers=header, json=BODY)
         res.raise_for_status()  
         responseData = res.json()
-        
-        print(res) 
-        print(responseData)
+        return responseData
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
+
+def load_data_from_file(file_path):
+    with open(file_path, 'r') as file:
+        data_from_file = json.load(file)
+    return data_from_file
+
+def normalize_json_to_dataframe(data):
+    df = pd.json_normalize(data)  
+    return df
+
+def connect_to_mysql(df):
+    engine = sqlalchemy.create_engine('mysql+pymysql://root:sunnylee@localhost:3306/sgp')
+    df.to_sql(name='sgp_brazil_data', con=engine, index=False, if_exists='append')
+
+# Call the functions
+response_data = make_api_request()
+data_from_file = load_data_from_file('response_data.json')
+df = normalize_json_to_dataframe(data_from_file)
+connect_to_mysql(df)
+
+
+
+
+
+
     
-sgpAPI()
