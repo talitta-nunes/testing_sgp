@@ -3,6 +3,7 @@ import pandas as pd
 import sqlalchemy
 import json
 from constants import URL, BODY
+from utils import connect_to_mysql
 
 def make_api_request():
     header = {'content-type': 'application/json'}
@@ -24,10 +25,10 @@ def normalize_json_to_dataframe(data):
     return df
 
 def connect_to_mysql(df):
-    engine = sqlalchemy.create_engine('mysql+pymysql://root:sunnylee@localhost:3306/sgp')
-    df.to_sql(name='sgp_brazil_data', con=engine, index=False, if_exists='append')
+    connection = connect_to_mysql()
+    df.to_sql(name='sgp_brazil_data', con=connection, index=False, if_exists='append')
 
-# Call the functions
+
 response_data = make_api_request()
 data_from_file = load_data_from_file('response_data.json')
 df = normalize_json_to_dataframe(data_from_file)
