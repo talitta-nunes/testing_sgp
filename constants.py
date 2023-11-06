@@ -4,7 +4,7 @@ URL =  'https://sgp-search.io/api/v1/post'
 country_name = "Brazil"
 fields_to_show = [
     "alternate_name",
-    "height_meters",
+    "sample_id",
     "section_name",
 	"basin_type",
     "site_type",
@@ -18,6 +18,8 @@ fields_to_show = [
     "mo", 
     "v",
     "u",
+    "p",
+    "su",
     "toc",
     "fe_hr_fe_t",
     "interpreted_age",

@@ -1,9 +1,8 @@
 import requests
 import pandas as pd
-import sqlalchemy
 import json
 from constants import URL, BODY
-from utils import connect_to_mysql
+from utils import engine
 
 def make_api_request():
     header = {'content-type': 'application/json'}
@@ -24,15 +23,14 @@ def normalize_json_to_dataframe(data):
     df = pd.json_normalize(data)  
     return df
 
-def connect_to_mysql(df):
-    connection = connect_to_mysql()
-    df.to_sql(name='sgp_brazil_data', con=connection, index=False, if_exists='append')
+def connect_to_database(df):
+    df.to_sql(name='sgp_brazil_data', con=engine, index=False, if_exists='append')
 
 
 response_data = make_api_request()
 data_from_file = load_data_from_file('response_data.json')
 df = normalize_json_to_dataframe(data_from_file)
-connect_to_mysql(df)
+connect_to_database(df)
 
 
 

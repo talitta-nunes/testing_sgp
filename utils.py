@@ -1,22 +1,6 @@
 from dotenv import load_dotenv
 import os
-import mysql.connector
+from sqlalchemy import create_engine
+load_dotenv()
 
-def connect_to_mysql():
-    load_dotenv()
-    host = os.getenv('DB_HOST')
-    user = os.getenv('DB_USER')
-    password = os.getenv('DB_PASSWORD')
-    port = 3306
-
-    try:
-        conn = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password,
-            port=port
-        )
-        return conn
-    except Exception as e:
-        print(f"An error occurred while connecting to the database: {e}")
-        return None
+engine = create_engine(f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_BASE')}")
