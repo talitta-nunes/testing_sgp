@@ -17,5 +17,7 @@ def make_api_request():
         return responseData
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
+        
+response_data = make_api_request()
 
 engine = create_engine(f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_BASE')}")
