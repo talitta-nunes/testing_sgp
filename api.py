@@ -28,18 +28,15 @@ def perform_sindy_analysis(result):
     from pysindy import SINDy, STLSQ
     
     df = pd.DataFrame(result, columns=['toc', 's'])
-    print(df)
-
-
-    custom_optimizer = STLSQ(threshold=0.001)  
-    model = SINDy(optimizer=custom_optimizer)
+    feature_names = ["toc", "s"]
+    custom_optimizer = STLSQ(threshold=0)  
+    model = SINDy(optimizer=custom_optimizer, feature_names=feature_names)
 
 
     model.fit(df.values)
 
 
-    print(model.equations())
-    
+    model.print()
 
 # calling functions
 data_from_file = load_data_from_file('response_data.json')
