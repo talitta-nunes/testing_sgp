@@ -20,12 +20,25 @@ def connect_to_database(df):
         result_data = np.array(results)
         result = result_data.astype(float)
 
-        return result
+        return result 
         
-def perform_sindy_analysis(resul):
-    from pysindy import SINDy
+def perform_sindy_analysis(result):
+    import numpy as np
+    import pandas as pd
+    from pysindy import SINDy, STLSQ
     
+    df = pd.DataFrame(result, columns=['toc', 's'])
+    print(df)
 
+
+    custom_optimizer = STLSQ(threshold=0.001)  
+    model = SINDy(optimizer=custom_optimizer)
+
+
+    model.fit(df.values)
+
+
+    print(model.equations())
     
 
 # calling functions
@@ -33,6 +46,7 @@ data_from_file = load_data_from_file('response_data.json')
 df = normalize_json_to_dataframe(data_from_file)
 connect_to_database(df)
 result = connect_to_database(df)
+perform_sindy_analysis(result)
 
 
 
