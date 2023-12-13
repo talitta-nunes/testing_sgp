@@ -25,11 +25,10 @@ def connect_to_database(df):
 
     with engine.connect() as conn:
         results = conn.execute(text("""
-    SELECT `TOC (wt%)`, `Os187/Os188(I)`, `FeHR/FeT`, `interpreted age`
+    SELECT `TOC (wt%)`,  `interpreted age`
     FROM sgp_all_data
-    WHERE `Os187/Os188(I)` IS NOT NULL
-      AND `FeHR/FeT` IS NOT NULL
-      AND `interpreted age` IS NOT NULL
+    WHERE 
+     `interpreted age` IS NOT NULL
       AND `TOC (wt%)` IS NOT NULL
 """)).fetchall()
         result_data = np.array(results)
@@ -41,21 +40,37 @@ def perform_sindy_analysis(result):
     import numpy as np
     import pandas as pd
     from pysindy import SINDy, STLSQ
+    import matplotlib.pyplot as plt
+
     
-    df = pd.DataFrame(result, columns=['TOC', 'Osi', 'FeHr', 'age'])
-    print(df)
-    feature_names = ["toc", "osi", "fehr", "age"]
+    df = pd.DataFrame(result, columns=['TOC',  'age'])
+    # print(df)
+    mean_toc=df.groupby('age')["TOC"].mean().reset_index()
+    mean_toc=mean_toc.sort_values(by="age")
+    t=mean_toc["age"].values
+
+    # print(t)
+
+    toc_data=mean_toc["TOC"].values
+
+    feature_names = ["toc"]
     custom_optimizer = STLSQ(threshold=0)  
     model = SINDy(optimizer=custom_optimizer, feature_names=feature_names)
-
-
-    model.fit(df.values)
-
-
+    model.fit(toc_data, t=t)
     model.print()
 
+    predicted_toc = model.predict(toc_data)
+    plt.plot(t, toc_data, label='Original toc')
+    plt.plot(t, predicted_toc, label='Predicted toc', linestyle='--', color = 'red')
+    plt.xlabel('Time (Ma)')
+    plt.ylabel('toc')
+    plt.legend()
+    plt.show()
+
+
+
 # calling functions
-data_from_file = load_data_from_file('responseData.json')
+data_from_file = load_data_from_file('responseSGP.json')
 df = normalize_json_to_dataframe(data_from_file)
 connect_to_database(df)
 result = connect_to_database(df)
