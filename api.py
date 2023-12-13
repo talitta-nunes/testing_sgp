@@ -48,7 +48,7 @@ def perform_sindy_analysis(result):
     model.print()
 
 # calling functions
-data_from_file = load_data_from_file('response_data.json')
+data_from_file = load_data_from_file('responseData.json')
 df = normalize_json_to_dataframe(data_from_file)
 connect_to_database(df)
 result = connect_to_database(df)
