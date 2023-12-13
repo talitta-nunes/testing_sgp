@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 import requests
 from constants import URL, BODY
@@ -13,8 +14,8 @@ def make_api_request(URL, BODY):
         res = requests.post(URL, headers=header, json=BODY)
         res.raise_for_status()  
         responseData = res.json()
-        # with open('responseData.json', 'w') as f:
-        #     json.dump(responseData, f)
+        with open('responseSGP.json', 'w') as f:
+            json.dump(responseData, f)
         
         return responseData
     except requests.exceptions.RequestException as e:

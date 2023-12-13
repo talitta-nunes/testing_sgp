@@ -16,15 +16,22 @@ def normalize_json_to_dataframe(data):
 def connect_to_database(df):
    
     inspector = inspect(engine)
-    table_exists = inspector.has_table('sgp_brazil_data')
+    table_exists = inspector.has_table('sgp_all_data')
 
     if not table_exists:
-        df.to_sql(name='sgp_brazil_data', con=engine, index=False, if_exists='fail')
+        df.to_sql(name='sgp_all_data', con=engine, index=False, if_exists='fail')
     else:
-        df.to_sql(name='sgp_brazil_data', con=engine, index=False, if_exists='append')
+        df.to_sql(name='sgp_all_data', con=engine, index=False, if_exists='append')
 
     with engine.connect() as conn:
-        results = conn.execute(text("SELECT `TOC (wt%)`, `S (wt%)`, `Mo (ppm)`, `U (ppm)`, `V (ppm)` FROM sgp_brazil_data WHERE `Mo (ppm)` IS NOT NULL AND `U (ppm)` IS NOT NULL AND `V (ppm)` IS NOT NULL AND `TOC (wt%)` IS NOT NULL AND `S (wt%)` IS NOT NULL")).fetchall()
+        results = conn.execute(text("""
+    SELECT `TOC (wt%)`, `Os187/Os188(I)`, `FeHR/FeT`, `interpreted age`
+    FROM sgp_all_data
+    WHERE `Os187/Os188(I)` IS NOT NULL
+      AND `FeHR/FeT` IS NOT NULL
+      AND `interpreted age` IS NOT NULL
+      AND `TOC (wt%)` IS NOT NULL
+""")).fetchall()
         result_data = np.array(results)
         result = result_data.astype(float)
 
@@ -35,10 +42,10 @@ def perform_sindy_analysis(result):
     import pandas as pd
     from pysindy import SINDy, STLSQ
     
-    df = pd.DataFrame(result, columns=['TOC', 'S', 'Mo', 'U', 'V'])
+    df = pd.DataFrame(result, columns=['TOC', 'Osi', 'FeHr', 'age'])
     print(df)
-    feature_names = ["toc", "s", "mo", "u", "v"]
-    custom_optimizer = STLSQ(threshold=0.1)  
+    feature_names = ["toc", "osi", "fehr", "age"]
+    custom_optimizer = STLSQ(threshold=0)  
     model = SINDy(optimizer=custom_optimizer, feature_names=feature_names)
 
 

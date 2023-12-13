@@ -7,6 +7,7 @@ fields_to_show = [
     "fe_hr_fe_t",
     "interpreted_age",
     "os187_os188i",
+    "country",
 ]
 
 
