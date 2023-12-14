@@ -25,33 +25,36 @@ def connect_to_database(df):
 
     with engine.connect() as conn:
         results = conn.execute(text("""
-    SELECT `TOC (wt%)`,  `interpreted age`
-    FROM sgp_all_data
-    WHERE 
-     `interpreted age` IS NOT NULL
-      AND `TOC (wt%)` IS NOT NULL
-""")).fetchall()
+        SELECT
+    `TOC (wt%)`,
+    `interpreted age`
+        FROM
+    sgp_all_data
+        WHERE
+    `interpreted age` IS NOT NULL
+    AND `TOC (wt%)` IS NOT NULL
+        """)).fetchall()
         result_data = np.array(results)
         result = result_data.astype(float)
 
     return result
-        
+       
 def perform_sindy_analysis(result):
     import numpy as np
     import pandas as pd
-    from pysindy import SINDy, STLSQ
     import matplotlib.pyplot as plt
-
+    from pysindy import SINDy, STLSQ
+  
     
-    df = pd.DataFrame(result, columns=['TOC',  'age'])
-    # print(df)
-    mean_toc=df.groupby('age')["TOC"].mean().reset_index()
+    df = pd.DataFrame(result, columns=['toc',  'age'])
+    # df['toc']=df['toc'].interpolate(method='linear')
+    # df['age']=df['age'].interpolate(method='linear')
+
+    mean_toc=df.groupby('age')["toc"].mean().reset_index()
     mean_toc=mean_toc.sort_values(by="age")
+
     t=mean_toc["age"].values
-
-    # print(t)
-
-    toc_data=mean_toc["TOC"].values
+    toc_data=mean_toc["toc"].values
 
     feature_names = ["toc"]
     custom_optimizer = STLSQ(threshold=0)  
@@ -60,10 +63,12 @@ def perform_sindy_analysis(result):
     model.print()
 
     predicted_toc = model.predict(toc_data)
+
     plt.plot(t, toc_data, label='Original toc')
     plt.plot(t, predicted_toc, label='Predicted toc', linestyle='--', color = 'red')
+    plt.gca().invert_xaxis()
     plt.xlabel('Time (Ma)')
-    plt.ylabel('toc')
+    plt.ylabel('TOC (wt%)')
     plt.legend()
     plt.show()
 
