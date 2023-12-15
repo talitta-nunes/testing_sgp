@@ -29,10 +29,7 @@ def connect_to_database(df):
     `TOC (wt%)`,
     `interpreted age`
         FROM
-    sgp_all_data
-        WHERE
-    `interpreted age` IS NOT NULL
-    AND `TOC (wt%)` IS NOT NULL
+    sgp_all_data;                        
         """)).fetchall()
         result_data = np.array(results)
         result = result_data.astype(float)
@@ -47,14 +44,16 @@ def perform_sindy_analysis(result):
   
     
     df = pd.DataFrame(result, columns=['toc',  'age'])
-    # df['toc']=df['toc'].interpolate(method='linear')
-    # df['age']=df['age'].interpolate(method='linear')
+    
+    df = df.sort_values(by='age')
+    
+    df['toc'] = df['toc'].interpolate(method='linear')
+    df['age'] = df['age'].interpolate(method='linear')
 
-    mean_toc=df.groupby('age')["toc"].mean().reset_index()
-    mean_toc=mean_toc.sort_values(by="age")
+    mean_toc = df.groupby('age')["toc"].mean().reset_index()
 
-    t=mean_toc["age"].values
-    toc_data=mean_toc["toc"].values
+    t = mean_toc["age"].values
+    toc_data = mean_toc["toc"].values
 
     feature_names = ["toc"]
     custom_optimizer = STLSQ(threshold=0)  
@@ -65,7 +64,7 @@ def perform_sindy_analysis(result):
     predicted_toc = model.predict(toc_data)
 
     plt.plot(t, toc_data, label='Original toc')
-    plt.plot(t, predicted_toc, label='Predicted toc', linestyle='--', color = 'red')
+    plt.plot(t, predicted_toc, label='Predicted toc', linestyle='--', color='red')
     plt.gca().invert_xaxis()
     plt.xlabel('Time (Ma)')
     plt.ylabel('TOC (wt%)')
