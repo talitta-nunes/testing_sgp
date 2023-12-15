@@ -4,32 +4,25 @@ import numpy as np
 from utils import engine
 from sqlalchemy import text, inspect
 
-def load_data_from_file(file_path):
-    with open(file_path, 'r') as file:
-        data_from_file = json.load(file)
-    return data_from_file
 
-def normalize_json_to_dataframe(data):
-    df = pd.json_normalize(data)  
-    return df
-
-def connect_to_database(df):
-   
+def add_data_to_database():
     inspector = inspect(engine)
     table_exists = inspector.has_table('sgp_all_data')
-
     if not table_exists:
-        df.to_sql(name='sgp_all_data', con=engine, index=False, if_exists='fail')
+        df = pd.read_json("responseSGP.json")
+        df.to_sql('sgp_all_data', con=engine, index=False)
     else:
-        df.to_sql(name='sgp_all_data', con=engine, index=False, if_exists='append')
+        print("Table 'sgp_all_data' already exists. Not appending or replacing.")
 
+
+def retrieve_data_from_database():
     with engine.connect() as conn:
         results = conn.execute(text("""
-        SELECT
-    `TOC (wt%)`,
-    `interpreted age`
-        FROM
-    sgp_all_data;                        
+            SELECT
+                `TOC (wt%)`,
+                `interpreted age`
+            FROM
+                sgp_all_data;                        
         """)).fetchall()
         result_data = np.array(results)
         result = result_data.astype(float)
@@ -44,7 +37,6 @@ def perform_sindy_analysis(result):
   
     
     df = pd.DataFrame(result, columns=['toc',  'age'])
-    
     df = df.sort_values(by='age')
     
     df['toc'] = df['toc'].interpolate(method='linear')
@@ -73,14 +65,14 @@ def perform_sindy_analysis(result):
 
 
 
-# calling functions
-data_from_file = load_data_from_file('responseSGP.json')
-df = normalize_json_to_dataframe(data_from_file)
-connect_to_database(df)
-result = connect_to_database(df)
+# Add data to the database
+# df = load_data_from_file('responseSGP.json')
+# df_normalized = normalize_json_to_dataframe(df)
+add_data_to_database()
+
+# Retrieve data from the database
+result = retrieve_data_from_database()
 perform_sindy_analysis(result)
-
-
 
 
 
